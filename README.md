@@ -1,3 +1,17 @@
+# Important
+
+## This repository is *not* synchronized with what is deployed.
+## This repository is simply here for people submitting PRs and Issues, which will be merged locally, deployed, then closed.
+
+##### ~ rozbrajaczpoziomow
+#
+#
+#
+#
+#
+#
+#
+#
 # TODO:
 
 -   [ ] Visualizer
