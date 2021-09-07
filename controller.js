@@ -104,6 +104,9 @@ class Controller {
     //BOt COMMMANDS:
 
     async onCocCmd(channelName, opts, isMod) {
+        if (opts[0] === "banlist") {
+            return `${this.bannedLangs.join(', ')||'No languages'} are banned.`;
+        }
         if (!isMod) {
             return "Only Mods are allowed!";
         }
