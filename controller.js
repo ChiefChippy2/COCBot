@@ -110,11 +110,11 @@ class Controller {
       if (!chromeLoc) await new Promise((resolve)=>{
           rl.question(sry, (answer)=>{
           chromeLoc = answer.trim();
-          appendFileSync('./.env', `\nCHROME_PATH=${chromeLoc}`);
           resolve();
         })
       });
       if (!chromeLoc) throw new Error('No chrome installation provided! Can\'t proceed!');
+      appendFileSync('./.env', `\nCHROME_PATH=${chromeLoc}`);
       console.log('Gotcha!');
       return chromeLoc;
     }
