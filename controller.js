@@ -1,8 +1,16 @@
 const bot = require("./bot");
 const db = require("./db");
 const axios = require("axios").default;
+const {execSync} = require('child_process');
 const axiosCookieJarSupport = require("axios-cookiejar-support").default;
 const tough = require("tough-cookie");
+const puppet = require('puppeteer-core');
+const {writeFileSync, readFileSync, existsSync, appendFileSync, unlinkSync} = require('fs');
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+  });  
 
 axiosCookieJarSupport(axios);
 
@@ -14,11 +22,6 @@ class Controller {
         this.password = process.env.PASSWORD;
         this.myId = null;
         this.db = db;
-        this.db
-            .init()
-            .then(async () => (this.commands = await this.db.getCommands()))
-            .catch((err) => console.log(err));
-        this.login();
         //Setting callBack function
         bot.on_cocCmd = this.onCocCmd.bind(this);
         bot.on_linkCmd = this.onLinkCmd.bind(this);
@@ -27,27 +30,108 @@ class Controller {
         bot.on_elseCmd = this.onElseCmd.bind(this);
         bot.on_helpCmd = this.onHelpCmd.bind(this);
     }
-    login() {
-        axios
-            .post(
-                "https://www.codingame.com/services/Codingamer/loginSiteV2",
-                [this.email, this.password, "true"],
-                {
-                    jar: cookieJar, // tough.CookieJar or boolean
-                    withCredentials: true, // If true, send cookie stored in jar
-                }
-            )
-            .then((d) => d.data)
-            .then((data) => {
-                this.myId = data["codinGamer"]["userId"];
-                console.log("Logged in");
-            })
-            .catch((err) => console.log(err));
+    async init() {
+      await this.db.init()
+      this.commands = await this.db.getCommands();
+
+      if (existsSync('./.bottoken') && await this.verifyCreds(true, readFileSync('./.bottoken').toString())) return true;
+      await this.login();
+    }
+    async verifyCreds(load, json){
+      if(load) {
+        const cookies = JSON.parse(json);
+        this.myId = cookies.pop();
+        for(let cookie of cookies){
+          cookieJar.setCookieSync(new tough.Cookie({
+            ...cookie,
+            'key': cookie.name,
+            'expires': new Date(cookie.expires*1000),
+          }), 'https://www.codingame.com/settings');
+        }
+      }
+        try{
+          this.createPrivateMatch()
+          console.log('All good!');
+          return true;
+        } catch {
+          console.log(load ? 'Loaded' : 'Received', 'credentials are invalid... oof');
+          unlinkSync('./.bottoken');
+          return false;
+        }
+    }
+    async #linuxChromeDetection(){
+      const loc = execSync('whereis google-chrome').toString();
+      return loc.split(' ').find(path=>path.endsWith('google-chrome'));
+    }
+    async #windowsChromeDetection(){
+      const resp = execSync('%SystemRoot%\\System32\\reg.exe query "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"').toString().split('\n');
+      if (!resp) return '';
+      return resp.match(/\(Default\)\s+REG_SZ\s+(.+)$/m)?.[1] || '';
+    }
+    async #detectChrome(){
+      console.log('Checking for chrome distribution... hold on for a sec or two...');
+      let chromeLoc = '';
+      switch (process.platform){
+        // TODO better support
+        case 'win32': chromeLoc = this.#windowsChromeDetection();break;
+        default: chromeLoc = this.#linuxChromeDetection();break;
+      };
+      const sry = 'Sorry, we can\'t find your chrome installation. Can you link us to your chrome installation ? Feel free to paste it below. It will be automatically added to your .env file'
+      if (!chromeLoc) await new Promise((resolve)=>{
+          rl.question(sry, (answer)=>{
+          chromeLoc = answer.trim();
+          appendFileSync('./.env', `\nCHROME_PATH=${chromeLoc}`);
+          resolve();
+        })
+      });
+      if (!chromeLoc) throw new Error('No chrome installation provided! Can\'t proceed!');
+      console.log('Gotcha!');
+      return chromeLoc;
+    }
+    async login() {
+      console.log('Trying to log in...')
+      const browser = await puppet.launch({
+        executablePath: process.env.CHROME_PATH || await this.#detectChrome(),
+        headless: false
+      });
+      const page = await browser.newPage();
+      await page.goto('https://codingame.com/settings');
+      await page.waitForNetworkIdle({timeout: 10000});
+      await page.evaluate((email, password)=>{
+        window.addEventListener('DOMContentLoaded', inject);
+        if (document.readyState === 'complete') inject();
+        function inject(){
+          const title = document.querySelector('.title-0-1-55');
+          if (title) title.innerHTML = 'SIGN IN TO YOUR BOT ACCOUNT (COCBot)';
+          const [emailField, passwordField] = document.querySelector('form').querySelectorAll('input');
+          if (email) emailField.value = email;
+          if (password) passwordField.value = password;
+        }
+      }, this.email, this.password).catch(e=>{ /* Void cuz not important */ });
+      console.log('A login page should be launched. If you don\'t see anything, something went wrong.');
+      const filter = (response)=>response.url() === 'https://www.codingame.com/services/CodinGamer/loginSite' && response.status() === 200
+      const resp = await page.waitForResponse(filter, {timeout: 1000*60*5});
+      const data = await resp.json();
+      this.myId = data["codinGamer"]["userId"];
+      const cookies = await page.cookies();
+      for(let cookie of cookies){
+        cookieJar.setCookieSync(new tough.Cookie({
+          ...cookie,
+          'key': cookie.name,
+          'expires': new Date(cookie.expires*1000),
+        }), 'https://www.codingame.com/settings');
+      }
+      writeFileSync(`./.bottoken`, JSON.stringify([...cookies, this.myId]));
+
+      await browser.close();
+      console.log('Login successful... hopefully. Let me check real quick!');
+      await this.verifyCreds(false);
     }
 
     async createPrivateMatch(
         modes = ["FASTEST", "SHORTEST", "REVERSE"],
-        languages = []
+        languages = [],
+        silent = false
     ) {
         if (!this.myId) {
             console.log("ERROR Not logged in");
@@ -63,7 +147,8 @@ class Controller {
             })
             .then((d) => d.data)
             .catch((err) => {
-                console.log("Error while creating Match", err);
+                if(!silent) console.log("Error while creating Match", err);
+                else throw new Error('Death');
             });
         const matchId = data["publicHandle"];
         return `Join Clash: https://www.codingame.com/clashofcode/clash/${matchId}`;

@@ -268,4 +268,19 @@ app.get("/create/:channelName", async (req, res) => {
 });
 //#endregion
 
-app.listen(process.env.PORT || 5000, () => console.log("Server is running..."));
+async function start(){
+  try{
+    console.log('Initializing Controller...');
+    await controller.init();
+    app.listen(process.env.PORT || 5000, () => console.log("Server is running..."));
+  } catch (e) {
+    console.error('An error happened whilst initializing! Error Output : ', e);
+    console.log('Process exiting...');
+    process.exit(1);
+  }
+}
+
+
+
+start();
+
