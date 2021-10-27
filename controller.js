@@ -18,6 +18,36 @@ const cookieJar = new tough.CookieJar();
 
 class Controller {
     constructor() {
+        this.bannedLangs = [];
+        this.languages = [
+            "Bash",
+            "VB.NET",
+            "C++",
+            "C#",
+            "C",
+            "Clojure",
+            "D",
+            "Dart",
+            "F#",
+            "Go",
+            "Groovy",
+            "Haskell",
+            "Java",
+            "Javascript",
+            "Kotlin",
+            "Lua",
+            "ObjectiveC",
+            "OCaml",
+            "Pascal",
+            "Perl",
+            "PHP",
+            "Python3",
+            "Ruby",
+            "Rust",
+            "Scala",
+            "Swift",
+            "TypeScript",
+        ];
         this.email = process.env.EMAIL;
         this.password = process.env.PASSWORD;
         this.myId = null;
@@ -195,6 +225,25 @@ class Controller {
         const info = await this.db.getChannelMatches(channelName);
         const currentMatch = !info ? "" : info.currentMatch;
         //No Current Match
+        if (opts[0] === "ban") {
+            const willBeBanned = opts.slice(1).filter(x=>this.languages.map(x=>x.toLowerCase()).includes(x.toLowerCase()));
+            this.bannedLangs.push(willBeBanned.map(x=>x.toLowerCase()));
+            if (this.bannedLangs.length === this.languages.length) {
+                return "Every langugage is now banned! No more clashes?";
+            }
+            return `${willBeBanned.join(', ')} are now banned!`;
+        }
+        if (opts[0] === "banlist") {
+            return `${this.bannedLangs.join(', ')} are banned.`;
+        }
+        if (opts[0] === "unban") {
+            if (opts[1] === '*') {
+                this.bannedLangs = [];
+                return "ALL LANGUAGES HAVE BEEN UNBANNED HALLELUJAH!"
+            }
+            this.bannedLangs = this.bannedLangs.filter(x=>!opts.slice(1).map(x=>x.toLowerCase()).includes(x));
+            return `${opts.slice(1).join(', ')} have been unbanned!`;
+        }
         if (currentMatch) {
             if (opts[0] === "cancel") {
                 await this.db.removeCurrentMatch(channelName);
@@ -208,36 +257,7 @@ class Controller {
         }
         const modes = ["FASTEST", "SHORTEST", "REVERSE"];
         let selectedModes = [];
-        let languages = [
-            "Bash",
-            "VB.NET",
-            "C++",
-            "C#",
-            "C",
-            "Clojure",
-            "D",
-            "Dart",
-            "F#",
-            "Go",
-            "Groovy",
-            "Haskell",
-            "Java",
-            "Javascript",
-            "Kotlin",
-            "Lua",
-            "ObjectiveC",
-            "OCaml",
-            "Pascal",
-            "Perl",
-            "PHP",
-            "Python3",
-            "Ruby",
-            "Rust",
-            "Scala",
-            "Swift",
-            "TypeScript",
-        ];
-        let selectedLang = [];
+        let selectedLang = this.languages.filter(x=>!this.bannedLangs.includes(x.toLowerCase()));
 
         if (opts.length > 0) {
             for (const opt of opts) {
@@ -249,7 +269,7 @@ class Controller {
                 } else if (["r", "reverse"].includes(opt)) {
                     selectedModes.push("REVERSE");
                 } else {
-                    for (const lang of languages) {
+                    for (const lang of this.languages) {
                         if (lang.toLowerCase() === opt.toLowerCase()) {
                             selectedLang.push(lang);
                             break;
@@ -260,7 +280,7 @@ class Controller {
         }
         if (selectedModes.length === 0) selectedModes = [...modes];
         else selectedModes = [...new Set(selectedModes)]; //Gets unique only
-        const res = await this.createPrivateMatch(selectedModes, selectedLang);
+        const res = await this.createPrivateMatch(selectedModes, [...new Set(selectedLang)]);
         const newMatchId = res.split("/").slice(-1)[0];
         const op = await this.db.addMatch(channelName, newMatchId);
         return res;
