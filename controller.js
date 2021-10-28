@@ -17,8 +17,6 @@ axiosCookieJarSupport(axios);
 
 const cookieJar = new tough.CookieJar();
 
-const paths = 
-
 class Controller {
     constructor() {
         this.bannedLangs = [];
