@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const Ctr = new require("./controller");
 const app = express();
-const fs = require("fs");
+const database = require('./db');
 
 const controller = new Ctr();
 app.use(express.static(__dirname + "/client/build"));
@@ -90,13 +90,11 @@ app.get("/api/prev/:channelName", async (req, res) => {
 app.get("/api/summary/:channelName", async (req, res) => {
     const channelName = req.params.channelName.toLowerCase();
     //TODO: send Channel wise report only
-    if (fs.existsSync(__dirname + "/data/prevMatches.min.json")) {
-        const data = JSON.parse(
-            fs.readFileSync(__dirname + "/data/prevMatches.min.json", {
-                encoding: "utf-8",
-            })
-        );
-        res.json({ status: 200, data });
+    const data = await database.getPrevMatchInfo();
+    if (data) {
+      if (data[channelName]) {
+        res.json({ status: 206, data: data[channelName] });
+      } else res.json({status: 200, data});
     } else {
         res.status(404).send({ status: 404, message: "No File found!!" });
     }
@@ -256,14 +254,12 @@ app.get("/create/:channelName", async (req, res) => {
         }
     }
     console.timeEnd("create");
+    console.log('Generating user friendly report...');
     fs.writeFileSync(
         __dirname + "/data/prevMatches.json",
         JSON.stringify(ret, null, 2)
     );
-    fs.writeFileSync(
-        __dirname + "/data/prevMatches.min.json",
-        JSON.stringify(ret)
-    );
+    await database.setPrevMatchInfo(ret);
     res.json(ret);
 });
 //#endregion

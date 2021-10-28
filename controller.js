@@ -17,10 +17,7 @@ axiosCookieJarSupport(axios);
 
 const cookieJar = new tough.CookieJar();
 
-const paths = {
-  'env': join(__dirname, '.env'),
-  'botToken': join(__dirname, 'data/.bottoken'),
-};
+const paths = 
 
 class Controller {
     constructor() {
@@ -104,12 +101,18 @@ class Controller {
       if (!resp) return '';
       return resp.match(/\(Default\)\s+REG_SZ\s+(.+)$/m)?.[1] || '';
     }
+    async #macChromeDetection(){
+      const resp = execSync('/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep -i "google chrome"').toString();
+      if(!resp) return '';
+      return resp.match(/executable:\s+(.+?)(?<!Helper)$/m)?.[1] || '';
+    }
     async #detectChrome(){
       console.log('Checking for chrome distribution... hold on for a sec or two...');
       let chromeLoc = '';
       switch (process.platform){
         // TODO better support
         case 'win32': chromeLoc = this.#windowsChromeDetection();break;
+        case 'darwin': chromeLoc = this.#macChromeDetection();break;
         default: chromeLoc = this.#linuxChromeDetection();break;
       };
       const sry = 'Sorry, we can\'t find your chrome installation. Can you link us to your chrome installation ? Feel free to paste it below. It will be automatically added to your .env file'

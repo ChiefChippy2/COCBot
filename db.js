@@ -1,27 +1,19 @@
-const { MongoClient } = require("mongodb");
-let client = null;
-let matchInfo = null;
-let commandsInfo = null;
-let db = null;
-const init = async () => {
-    const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lduex.mongodb.net/bot?retryWrites=true&w=majority`;
-    client = new MongoClient(uri, { useUnifiedTopology: true });
-    await client.connect();
-    db = client.db("bot");
-    matchInfo = db.collection("matches");
-    commandsInfo = db.collection("commands");
-};
+const {db} = require('./utils');
+const Keyv = require('keyv');
+const database = new Keyv(`sqlite://${db}`, {namespace: 'internals'});
+const matchesDatabase = new Keyv(`sqlite://${db}`, {namespace: 'matches'});
+
+database.on('error', err => console.log('Connection Error with database', err));
+/**
+ * Internals : 
+ * 
+ * matchInfo -> Array of matchInformation
+ * commands -> Array of commands
+ * 
+ */
 
 const getAll = async () => {
-    const cursor = matchInfo.find({});
-    if ((await cursor.count()) === 0) {
-        console.log("No documents found!");
-    }
-    const op = [];
-    await cursor.forEach((m) => {
-        op.push(m);
-    });
-    return op;
+  return await database.get('matchInfo') || [];
 };
 
 const addMatch = async (channelName, matchId, removeCurrent = false) => {
@@ -33,62 +25,53 @@ const addMatch = async (channelName, matchId, removeCurrent = false) => {
             prev.unshift(chobj["currentMatch"]);
         }
     }
-    const query = {
-        $set: {
-            currentMatch: matchId,
-            prevMatches: prev,
-        },
+    const mInfo = await database.get('matchInfo');
+    mInfo[channelName] = {
+      currentMatch: matchId,
+      prevMatches: prev,
     };
-    const op = await matchInfo.updateOne({ _id: channelName }, query, {
-        upsert: true,
-    });
-    return op;
+    return await database.set('matchInfo', mInfo);
 };
 const removeCurrentMatch = async (channelName) => {
-    const op = await matchInfo.updateOne(
-        { _id: channelName },
-        { $set: { currentMatch: "" } }
-    );
-    return op;
+    const mInfo = await database.get('matchInfo');
+    mInfo[channelName]?.currentMatch = null;
+    return await database.set('matchInfo', mInfo);
+
 };
 const getChannelMatches = async (channelName) => {
-    const op = await matchInfo.findOne({ _id: channelName });
-    return op;
+  const mInfo = await database.get('matchInfo');
+  return mInfo[channelName];
 };
 
 const getChannelCommands = async (channelName) => {
-    const op = await commandsInfo.findOne({ _id: channelName });
-    return op;
+  const cInfo = await database.get('commands');
+  return cInfo[channelName];
 };
 
 const addCommand = async (channelName, command, response) => {
-    const op = await commandsInfo.updateOne(
-        { _id: channelName },
-        { $set: { [command]: response } },
-        { upsert: true }
-    );
-    return op;
+    const cInfo = await database.get('commands');
+    cInfo[channelName] = {
+      [command]: response,
+    };
+    return await database.set('commands', cInfo);
 };
+// drk what author is trying to do here
 const getCommands = async () => {
-    const cursor = commandsInfo.find({});
-    if ((await cursor.count()) === 0) {
-        console.log("No documents found!");
-    }
-    const op = {};
-    await cursor.forEach((m) => {
-        const channelName = m._id;
-        delete m._id;
-        op[channelName] = { ...m };
-    });
-    return op;
+    return await database.get('commands');
 };
 
 const removeCommand = async (channelName, command) => {
-    const op = await commandsInfo.updateOne(
-        { _id: channelName },
-        { $unset: { [command]: "" } }
-    );
+  const cInfo = await database.get('commands');
+  if (cInfo[channelName]?.[command]) cInfo[channelName][command] = null;
+  return await database.set('commands', cInfo);
 };
+
+const getPrevMatchInfo = async () => {
+  return await matchesDatabase.get('matches');
+}
+const setPrevMatchInfo = async (data) => {
+  return await matchesDatabase.set('matches', data);
+}
 
 module.exports = {
     init,
@@ -100,4 +83,6 @@ module.exports = {
     addCommand,
     getCommands,
     removeCommand,
+    getPrevMatchInfo,
+    setPrevMatchInfo,
 };
