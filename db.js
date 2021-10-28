@@ -1,7 +1,7 @@
-const {db} = require('./utils');
+const {paths} = require('./utils');
 const Keyv = require('keyv');
-const database = new Keyv(`sqlite://${db}`, {namespace: 'internals'});
-const matchesDatabase = new Keyv(`sqlite://${db}`, {namespace: 'matches'});
+const database = new Keyv(`sqlite://${paths.db}`, {namespace: 'internals'});
+const matchesDatabase = new Keyv(`sqlite://${paths.db}`, {namespace: 'matches'});
 
 database.on('error', err => console.log('Connection Error with database', err));
 /**
@@ -45,7 +45,7 @@ const addMatch = async (channelName, matchId, removeCurrent = false) => {
  */
 const removeCurrentMatch = async (channelName) => {
     const mInfo = await database.get('matchInfo');
-    mInfo[channelName]?.currentMatch = null;
+    mInfo[channelName].currentMatch = null;
     return await database.set('matchInfo', mInfo);
 
 };
@@ -126,7 +126,6 @@ const setPrevMatchInfo = async (data) => {
  * @property {string[]|null} prevMatches Previous Matches
  */
 module.exports = {
-    init,
     getAll,
     addMatch,
     removeCurrentMatch,

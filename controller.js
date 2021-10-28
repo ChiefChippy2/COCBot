@@ -1,5 +1,6 @@
-const bot = require("./bot");
+// const bot = require("./bot");
 const db = require("./db");
+const {paths} = require('./utils');
 const axios = require("axios").default;
 const {execSync} = require('child_process');
 const axiosCookieJarSupport = require("axios-cookiejar-support").default;
@@ -59,19 +60,19 @@ class Controller {
         this.myId = null;
         this.db = db;
         //Setting callBack function
-        bot.on_cocCmd = this.onCocCmd.bind(this);
-        bot.on_linkCmd = this.onLinkCmd.bind(this);
-        bot.on_addCmd = this.onAddCmd.bind(this);
-        bot.on_removeCmd = this.onRemoveCmd.bind(this);
-        bot.on_elseCmd = this.onElseCmd.bind(this);
-        bot.on_helpCmd = this.onHelpCmd.bind(this);
+        // bot.on_cocCmd = this.onCocCmd.bind(this);
+        // bot.on_linkCmd = this.onLinkCmd.bind(this);
+        // bot.on_addCmd = this.onAddCmd.bind(this);
+        // bot.on_removeCmd = this.onRemoveCmd.bind(this);
+        // bot.on_elseCmd = this.onElseCmd.bind(this);
+        // bot.on_helpCmd = this.onHelpCmd.bind(this);
     }
     /**
      * Init
      * @return {void}
      */
     async init() {
-      this.commands = await this.db.getCommands();
+      // this.commands = await this.db.getCommands();
       if (existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
       await this.login();
     }
@@ -108,7 +109,7 @@ class Controller {
      * Tries to detect chrome path on linux
      * @return {string|null}
      */
-    async #linuxChromeDetection(){
+    #linuxChromeDetection(){
       const loc = execSync('whereis google-chrome').toString();
       return loc.split(' ').find(path=>path.endsWith('google-chrome'));
     }
@@ -117,7 +118,7 @@ class Controller {
      * Tries to detect chrome path on Windows (XP+)
      * @return {string|null}
      */
-    async #windowsChromeDetection(){
+    #windowsChromeDetection(){
       const resp = execSync('%SystemRoot%\\System32\\reg.exe query "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"').toString();
       if (!resp) return '';
       return resp.match(/\(Default\)\s+REG_SZ\s+(.+)$/m)?.[1] || '';
@@ -127,7 +128,7 @@ class Controller {
      * Tries to detect chrome path on mac
      * @return {string|null}
      */
-    async #macChromeDetection(){
+    #macChromeDetection(){
       const resp = execSync('/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep -i "google chrome"').toString();
       if(!resp) return '';
       return resp.match(/executable:\s+(.+?)(?<!Helper)$/m)?.[1] || '';
@@ -151,7 +152,7 @@ class Controller {
           chromeLoc = answer.trim();
           resolve();
         })
-      });
+      }); 
       if (!chromeLoc) throw new Error('No chrome installation provided! Can\'t proceed!');
       appendFileSync(paths.env, `\nCHROME_PATH=${chromeLoc}`);
       console.log('Gotcha!');
@@ -197,7 +198,7 @@ class Controller {
 
       await browser.close();
       console.log('Login successful... hopefully. Let me check real quick!');
-      await this.verifyCreds(false);
+      return await this.verifyCreds(false);
     }
 
     async createPrivateMatch(
