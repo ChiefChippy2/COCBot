@@ -7,6 +7,7 @@ const tough = require("tough-cookie");
 const puppet = require('puppeteer-core');
 const {writeFileSync, readFileSync, existsSync, appendFileSync, unlinkSync} = require('fs');
 const readline = require('readline');
+const {join} = require('path');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -15,6 +16,11 @@ const rl = readline.createInterface({
 axiosCookieJarSupport(axios);
 
 const cookieJar = new tough.CookieJar();
+
+const paths = {
+  'env': join(__dirname, '.env'),
+  'botToken': join(__dirname, 'data/.bottoken'),
+};
 
 class Controller {
     constructor() {
@@ -64,7 +70,7 @@ class Controller {
       await this.db.init()
       this.commands = await this.db.getCommands();
 
-      if (existsSync('./.bottoken') && await this.verifyCreds(true, readFileSync('./.bottoken').toString())) return true;
+      if (existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
       await this.login();
     }
     async verifyCreds(load, json){
@@ -85,7 +91,7 @@ class Controller {
           return true;
         } catch {
           console.log(load ? 'Loaded' : 'Received', 'credentials are invalid... oof');
-          unlinkSync('./.bottoken');
+          unlinkSync(paths.botToken);
           return false;
         }
     }
@@ -114,7 +120,7 @@ class Controller {
         })
       });
       if (!chromeLoc) throw new Error('No chrome installation provided! Can\'t proceed!');
-      appendFileSync('./.env', `\nCHROME_PATH=${chromeLoc}`);
+      appendFileSync(paths.env, `\nCHROME_PATH=${chromeLoc}`);
       console.log('Gotcha!');
       return chromeLoc;
     }
@@ -151,7 +157,7 @@ class Controller {
           'expires': new Date(cookie.expires*1000),
         }), 'https://www.codingame.com/settings');
       }
-      writeFileSync(`./.bottoken`, JSON.stringify([...cookies, this.myId]));
+      writeFileSync(paths.botToken, JSON.stringify([...cookies, this.myId]));
 
       await browser.close();
       console.log('Login successful... hopefully. Let me check real quick!');
