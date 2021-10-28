@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { execSync } = require("child_process");
 const express = require("express");
 const Ctr = new require("./controller");
 const app = express();
@@ -272,6 +273,13 @@ async function start(){
   try{
     console.log('Initializing Controller...');
     await controller.init();
+    console.log('Finished Controller Initialization... Trying to launch webserver...');
+    console.log('Checking if website is built...');
+    if(fs.existsSync(_dirname + "/client/build/index.html")) console.log('False alarm!')
+    else{
+      console.log('Running react build');
+      execSync(`cd ${__dirname} & cd client & npm install & npm run build`);
+    }
     app.listen(process.env.PORT || 5000, () => console.log("Server is running..."));
   } catch (e) {
     console.error('An error happened whilst initializing! Error Output : ', e);

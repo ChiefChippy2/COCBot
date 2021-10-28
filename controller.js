@@ -95,11 +95,11 @@ class Controller {
           return false;
         }
     }
-    async #linuxChromeDetection(){
+    #linuxChromeDetection(){
       const loc = execSync('whereis google-chrome').toString();
       return loc.split(' ').find(path=>path.endsWith('google-chrome'));
     }
-    async #windowsChromeDetection(){
+    #windowsChromeDetection(){
       const resp = execSync('%SystemRoot%\\System32\\reg.exe query "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"').toString();
       if (!resp) return '';
       return resp.match(/\(Default\)\s+REG_SZ\s+(.+)$/m)?.[1] || '';
@@ -161,7 +161,7 @@ class Controller {
 
       await browser.close();
       console.log('Login successful... hopefully. Let me check real quick!');
-      await this.verifyCreds(false);
+      return await this.verifyCreds(false);
     }
 
     async createPrivateMatch(
