@@ -16,8 +16,13 @@ const rl = readline.createInterface({
 axiosCookieJarSupport(axios);
 
 const cookieJar = new tough.CookieJar();
-
+/**
+ * Controller class
+ */
 class Controller {
+  /**
+   * Constructor. Please call init() to actually initiate Controller.
+   */
     constructor() {
         this.bannedLangs = [];
         this.languages = [
@@ -61,11 +66,21 @@ class Controller {
         bot.on_elseCmd = this.onElseCmd.bind(this);
         bot.on_helpCmd = this.onHelpCmd.bind(this);
     }
+    /**
+     * Init
+     * @return {void}
+     */
     async init() {
       this.commands = await this.db.getCommands();
       if (existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
       await this.login();
     }
+    /**
+     * Verifies credentials
+     * @param {boolean} load Whether the function should load the json to cookieJar
+     * @param {string} [json] String JSON
+     * @return {boolean} Whether the credentials are valid
+     */
     async verifyCreds(load, json){
       if(load) {
         const cookies = JSON.parse(json);
@@ -88,20 +103,39 @@ class Controller {
           return false;
         }
     }
+
+    /**
+     * Tries to detect chrome path on linux
+     * @return {string|null}
+     */
     async #linuxChromeDetection(){
       const loc = execSync('whereis google-chrome').toString();
       return loc.split(' ').find(path=>path.endsWith('google-chrome'));
     }
+
+    /**
+     * Tries to detect chrome path on Windows (XP+)
+     * @return {string|null}
+     */
     async #windowsChromeDetection(){
       const resp = execSync('%SystemRoot%\\System32\\reg.exe query "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"').toString();
       if (!resp) return '';
       return resp.match(/\(Default\)\s+REG_SZ\s+(.+)$/m)?.[1] || '';
     }
+
+    /**
+     * Tries to detect chrome path on mac
+     * @return {string|null}
+     */
     async #macChromeDetection(){
       const resp = execSync('/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep -i "google chrome"').toString();
       if(!resp) return '';
       return resp.match(/executable:\s+(.+?)(?<!Helper)$/m)?.[1] || '';
     }
+    /**
+     * Gets chrome location
+     * @return {string}
+     */
     async #detectChrome(){
       console.log('Checking for chrome distribution... hold on for a sec or two...');
       let chromeLoc = '';
@@ -123,6 +157,9 @@ class Controller {
       console.log('Gotcha!');
       return chromeLoc;
     }
+    /**
+     * Logs in
+     */
     async login() {
       console.log('Trying to log in...')
       const browser = await puppet.launch({
