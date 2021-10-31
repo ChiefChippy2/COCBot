@@ -75,6 +75,7 @@ class Controller {
     }
     async verifyCreds(load, json){
       if(load) {
+        console.log('There seems to have been cookies from a previous session that were saved in data/.bottoken ... No login necessary.');
         const cookies = JSON.parse(json);
         this.myId = cookies.pop();
         for(let cookie of cookies){
@@ -86,11 +87,25 @@ class Controller {
         }
       }
         try{
-          this.createPrivateMatch()
+          await this.createPrivateMatch();
+          const biscuits = cookieJar.getCookiesSync('https://www.codingame.com/settings');
+          const cookies = [];
+          for(let biscuit of biscuits){
+            cookies.push({
+              ...biscuit,
+              'name': biscuit.key,
+              'expires': (biscuit.expires?.getTime?.() ?? 0)/1000,
+            });
+          }
+          if(load && cookies.find(x=>x.name === 'cgSession') !== JSON.parse(json).find(x=>x.name === 'cgSession')){
+            console.log('New cookies look different... Updating session token in data/.bottoken...');
+            writeFileSync(paths.botToken, JSON.stringify([...cookies, this.myId]));
+          }
           console.log('All good!');
           return true;
-        } catch {
-          console.log(load ? 'Loaded' : 'Received', 'credentials are invalid... oof');
+        } catch(e) {
+          console.log(e)
+          console.log(load ? 'Loaded' : 'Received', 'credentials are invalid... oof. Deleting saved cookies.');
           unlinkSync(paths.botToken);
           return false;
         }
