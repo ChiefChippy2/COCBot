@@ -3,14 +3,15 @@ const { execSync } = require("child_process");
 const express = require("express");
 const Ctr = new require("./controller");
 const app = express();
+const {paths} = require('./utils');
 const database = require('./db');
 const fs = require('fs');
 
 const controller = new Ctr();
-app.use(express.static(__dirname + "/client/build"));
+app.use(express.static(paths.buildDir));
 
 app.get("/web/*", (req, res) => {
-    res.sendFile(__dirname + "/client/build/index.html");
+    res.sendFile(paths.build);
 });
 
 //#region API
@@ -258,7 +259,7 @@ app.get("/create/:channelName", async (req, res) => {
     console.timeEnd("create");
     console.log('Generating user friendly report...');
     fs.writeFileSync(
-        __dirname + "/data/prevMatches.json",
+        paths.prevMatches,
         JSON.stringify(ret, null, 2)
     );
     await database.setPrevMatchInfo(ret);
@@ -272,10 +273,10 @@ async function start(){
     await controller.init();
     console.log('Finished Controller Initialization... Trying to launch webserver...');
     console.log('Checking if website is built...');
-    if(fs.existsSync(__dirname + "/client/public/index.html")) console.log('False alarm!')
+    if(fs.existsSync(paths.build)) console.log('False alarm!')
     else{
       console.log('Running react build');
-      execSync(`cd ${__dirname} & cd client & npm install & npm run build`);
+      execSync(`cd ${__dirname} ; cd client ; npm install ; npm run build`);
     }
     app.listen(process.env.PORT || 5000, () => console.log("Server is running..."));
   } catch (e) {

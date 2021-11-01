@@ -1,5 +1,7 @@
 const {paths} = require('./utils');
 const Keyv = require('keyv');
+const {existsSync, mkdirSync} = require('fs');
+if(!existsSync(paths.data)) mkdirSync(paths.data);
 const database = new Keyv(`sqlite://${paths.db}`, {namespace: 'internals'});
 const matchesDatabase = new Keyv(`sqlite://${paths.db}`, {namespace: 'matches'});
 
@@ -11,9 +13,20 @@ database.on('error', err => console.log('Connection Error with database', err));
  * commands -> Array of commands
  * 
  */
+/**
+ * Initializes db
+ * @return {boolean}
+ */
+const init = async () => {
+  const mInfo = await database.get('matchInfo') || {};
+  await database.set('matchInfo', mInfo);
+
+  const cInfo = await database.get('commands') || {};
+  await database.set('commands', cInfo);
+};
 
 const getAll = async () => {
-  return await database.get('matchInfo') || [];
+  return await database.get('matchInfo') || {};
 };
 /**
  * Adds a match
@@ -126,6 +139,7 @@ const setPrevMatchInfo = async (data) => {
  * @property {string[]|null} prevMatches Previous Matches
  */
 module.exports = {
+    init,
     getAll,
     addMatch,
     removeCurrentMatch,

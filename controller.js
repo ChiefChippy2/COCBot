@@ -72,7 +72,8 @@ class Controller {
      * @return {void}
      */
     async init() {
-      // this.commands = await this.db.getCommands();
+      await this.db.init();
+      this.commands = await this.db.getCommands();
       if (existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
       await this.login();
     }

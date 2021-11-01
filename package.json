@@ -10,14 +10,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ChaitanyaLKulkarni/COCBot.git"
+        "url": "git+https://github.com/ChiefChippy2/COCBot.git"
     },
-    "author": "",
+    "author": "ChiefChippy2",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/ChaitanyaLKulkarni/COCBot/issues"
+        "url": "https://github.com/ChiefChippy2/COCBot/issues"
     },
-    "homepage": "https://github.com/ChaitanyaLKulkarni/COCBot#readme",
+    "homepage": "https://github.com/ChiefChippy2/COCBot#readme",
     "dependencies": {
         "@keyv/sqlite": "^2.0.3",
         "axios": "^0.21.1",

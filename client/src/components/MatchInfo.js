@@ -29,7 +29,7 @@ function MatchInfo({ matchData: match }) {
     return (
         <div className="match-info">
             <h2>Mode:{match.mode}</h2>
-            {tops.length === 0 && <h2>Clashining..</h2>}
+            {tops.length === 0 && <h2>Clashing..</h2>}
             {tops.map((player, index) => (
                 <PlayerInfo
                     key={player.name}
