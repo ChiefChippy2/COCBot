@@ -10,19 +10,21 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ChaitanyaLKulkarni/COCBot.git"
+        "url": "git+https://github.com/ChiefChippy2/COCBot.git"
     },
-    "author": "",
+    "author": "ChiefChippy2",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/ChaitanyaLKulkarni/COCBot/issues"
+        "url": "https://github.com/ChiefChippy2/COCBot/issues"
     },
-    "homepage": "https://github.com/ChaitanyaLKulkarni/COCBot#readme",
+    "homepage": "https://github.com/ChiefChippy2/COCBot#readme",
     "dependencies": {
+        "@keyv/sqlite": "^2.0.3",
         "axios": "^0.21.1",
         "axios-cookiejar-support": "^1.0.1",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
+        "keyv": "^4.0.3",
         "mongodb": "^3.6.6",
         "puppeteer-core": "^10.4.0",
         "tmi.js": "^1.8.1",

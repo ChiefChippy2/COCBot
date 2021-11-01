@@ -7,10 +7,10 @@ function PlayerInfo({ playerData, index }) {
         "00" + Math.floor(sec % 60)
     ).slice(-2)}s`;
     const language = playerData.language
-        .toLowerCase()
-        .replace(/\+/g, "plus")
-        .replace("#", "sharp")
-        .replace(/[0-9]|-/g, "");
+        ?.toLowerCase?.()
+        ?.replace?.(/\+/g, "plus")
+        ?.replace?.("#", "sharp")
+        ?.replace?.(/[0-9]|-/g, "") || 'NONE';
     return (
         <div
             className={

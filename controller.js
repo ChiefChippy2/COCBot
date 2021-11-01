@@ -1,5 +1,6 @@
 const bot = require("./bot");
 const db = require("./db");
+const {paths} = require('./utils');
 const axios = require("axios").default;
 const {execSync} = require('child_process');
 const axiosCookieJarSupport = require("axios-cookiejar-support").default;
@@ -16,13 +17,13 @@ const rl = readline.createInterface({
 axiosCookieJarSupport(axios);
 
 const cookieJar = new tough.CookieJar();
-
-const paths = {
-  'env': join(__dirname, '.env'),
-  'botToken': join(__dirname, 'data/.bottoken'),
-};
-
+/**
+ * Controller class
+ */
 class Controller {
+  /**
+   * Constructor. Please call init() to actually initiate Controller.
+   */
     constructor() {
         this.bannedLangs = [];
         this.languages = [
@@ -66,13 +67,22 @@ class Controller {
         bot.on_elseCmd = this.onElseCmd.bind(this);
         bot.on_helpCmd = this.onHelpCmd.bind(this);
     }
+    /**
+     * Init
+     * @return {void}
+     */
     async init() {
-      await this.db.init()
+      await this.db.init();
       this.commands = await this.db.getCommands();
-
       if (existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
       await this.login();
     }
+    /**
+     * Verifies credentials
+     * @param {boolean} load Whether the function should load the json to cookieJar
+     * @param {string} [json] String JSON
+     * @return {boolean} Whether the credentials are valid
+     */
     async verifyCreds(load, json){
       if(load) {
         console.log('There seems to have been cookies from a previous session that were saved in data/.bottoken ... No login necessary.');
@@ -110,21 +120,48 @@ class Controller {
           return false;
         }
     }
+
+
+    /**
+     * Tries to detect chrome path on linux
+     * @return {string|null}
+     */
     #linuxChromeDetection(){
       const loc = execSync('whereis google-chrome').toString();
       return loc.split(' ').find(path=>path.endsWith('google-chrome'));
     }
+
+
+    /**
+     * Tries to detect chrome path on Windows (XP+)
+     * @return {string|null}
+     */
     #windowsChromeDetection(){
       const resp = execSync('%SystemRoot%\\System32\\reg.exe query "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"').toString();
       if (!resp) return '';
       return resp.match(/\(Default\)\s+REG_SZ\s+(.+)$/m)?.[1] || '';
     }
+
+    /**
+     * Tries to detect chrome path on mac
+     * @return {string|null}
+     */
+    #macChromeDetection(){
+      const resp = execSync('/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep -i "google chrome"').toString();
+      if(!resp) return '';
+      return resp.match(/executable:\s+(.+?)(?<!Helper)$/m)?.[1] || '';
+    }
+    /**
+     * Gets chrome location
+     * @return {string}
+     */
     async #detectChrome(){
       console.log('Checking for chrome distribution... hold on for a sec or two...');
       let chromeLoc = '';
       switch (process.platform){
         // TODO better support
         case 'win32': chromeLoc = this.#windowsChromeDetection();break;
+        case 'darwin': chromeLoc = this.#macChromeDetection();break;
         default: chromeLoc = this.#linuxChromeDetection();break;
       };
       const sry = 'Sorry, we can\'t find your chrome installation. Can you link us to your chrome installation ? Feel free to paste it below. It will be automatically added to your .env file'
@@ -133,12 +170,15 @@ class Controller {
           chromeLoc = answer.trim();
           resolve();
         })
-      });
+      }); 
       if (!chromeLoc) throw new Error('No chrome installation provided! Can\'t proceed!');
       appendFileSync(paths.env, `\nCHROME_PATH=${chromeLoc}`);
       console.log('Gotcha!');
       return chromeLoc;
     }
+    /**
+     * Logs in
+     */
     async login() {
       console.log('Trying to log in...')
       const browser = await puppet.launch({

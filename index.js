@@ -3,13 +3,15 @@ const { execSync } = require("child_process");
 const express = require("express");
 const Ctr = new require("./controller");
 const app = express();
-const fs = require("fs");
+const {paths} = require('./utils');
+const database = require('./db');
+const fs = require('fs');
 
 const controller = new Ctr();
-app.use(express.static(__dirname + "/client/build"));
+app.use(express.static(paths.buildDir));
 
 app.get("/web/*", (req, res) => {
-    res.sendFile(__dirname + "/client/build/index.html");
+    res.sendFile(paths.build);
 });
 
 //#region API
@@ -91,13 +93,11 @@ app.get("/api/prev/:channelName", async (req, res) => {
 app.get("/api/summary/:channelName", async (req, res) => {
     const channelName = req.params.channelName.toLowerCase();
     //TODO: send Channel wise report only
-    if (fs.existsSync(__dirname + "/data/prevMatches.min.json")) {
-        const data = JSON.parse(
-            fs.readFileSync(__dirname + "/data/prevMatches.min.json", {
-                encoding: "utf-8",
-            })
-        );
-        res.json({ status: 200, data });
+    const data = await database.getPrevMatchInfo();
+    if (data) {
+      if (data[channelName]) {
+        res.json({ status: 206, data: data[channelName] });
+      } else res.json({status: 200, data});
     } else {
         res.status(404).send({ status: 404, message: "No File found!!" });
     }
@@ -257,14 +257,12 @@ app.get("/create/:channelName", async (req, res) => {
         }
     }
     console.timeEnd("create");
+    console.log('Generating user friendly report...');
     fs.writeFileSync(
-        __dirname + "/data/prevMatches.json",
+        paths.prevMatches,
         JSON.stringify(ret, null, 2)
     );
-    fs.writeFileSync(
-        __dirname + "/data/prevMatches.min.json",
-        JSON.stringify(ret)
-    );
+    await database.setPrevMatchInfo(ret);
     res.json(ret);
 });
 //#endregion
@@ -275,10 +273,10 @@ async function start(){
     await controller.init();
     console.log('Finished Controller Initialization... Trying to launch webserver...');
     console.log('Checking if website is built...');
-    if(fs.existsSync(_dirname + "/client/build/index.html")) console.log('False alarm!')
+    if(fs.existsSync(paths.build)) console.log('False alarm!')
     else{
       console.log('Running react build');
-      execSync(`cd ${__dirname} & cd client & npm install & npm run build`);
+      execSync(`cd ${__dirname} ; cd client ; npm install ; npm run build`);
     }
     app.listen(process.env.PORT || 5000, () => console.log("Server is running..."));
   } catch (e) {
