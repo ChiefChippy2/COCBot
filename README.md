@@ -1,74 +1,75 @@
-# Important
+# Acknowledgements and credits
 
-## This repository is *not* synchronized with what is deployed.
-## This repository is simply here for people submitting PRs and Issues, which will be merged locally, deployed, then closed.
+A major part of the code comes from [rozbrajaczpoziomow/COCBot](https://github.com/rozbrajaczpoziomow/COCBot) and originally [ChaitanyaLKulkarni/COCBot](https://github.com/ChaitanyaLKulkarni/COCBot). This is only a fork of the original repository that got accidentally pushed and merged (blame midnight commits) with a fork of the fork.
 
-##### ~ rozbrajaczpoziomow
-#
-#
-#
-#
-#
-#
-#
-#
-# TODO:
+# Function of the bot
 
--   [ ] Visualizer
+This repository contains the code for a twitch clash of code bot that also has other miscellaneous functions. Clash of code is a competitive, real-time, multiplayer programmaing game created by [CodinGame](https://codingame.com) where you have to solve a problem within 15 minutes. The API used to communicate with CodinGame is unofficial and is subject to break anytime. A website on localhost is also provided for the user to see clash summary. Reports are generated in the data folder.
 
-    -   [x] Get Data From COC
-    -   [x] Formate Data
-        -   [x] Get only relatale
-    -   [x] Save minified and normal version
-    -   [x] Give data to react client and let them process it
+# Instructions & Prerequisities
 
-        -   _Given only needed data so will be fine for_
+### You will need : 
+- Node.js (14 LTS or above)
+- npm (comes bundled with node.js) in PATH
+- Chrome (stable) for logging the bot into CodinGame (or, alternatively, there's a way to do it manually, see below). This should be a one-time procedure and the token validity should be up to 1 year.
+- ...and other dependencies that will be installed (takes around 50 MB uncompressed)
 
-    -   [ ] Pages:
-        -   [x] Page 1 Summary
-        -   [x] Page 2 Top Players
-        -   [x] Page 3 Language Summary
-        -   [ ] Page 4 Most played Players
-        -   [ ] Page 5 Player wise Summary
-    -   [ ] Add Parllax Scrolling with nice background
+### Setup :
+1. Simply download the code, unzip if necessary. Open a terminal in the directory and run `npm i`. This should install everything.
+2. Create a `.env` file, following the model given in `.env.sample`. If a value is surrounded by square brackets, they are not necessary.
+3. Run the bot and let it do its thing. 
 
----
+# Manually logging in the bot to CodinGame
 
-## Needed Tools
+Because of a change made in the end of october 2021, logins require Captcha which means human interaction. To solve this, there are three solutions : either 1) ask a human to input the username, password, and captcha, or 2) ask a human to login from a separate browser, then to provide the cookies, or 3) make a robot solve a im-not-a-robot challenge.
 
--   [Recharts](https://www.npmjs.com/package/recharts)
--   [Axios](https://www.npmjs.com/package/axios)
+Of course, the third option was not feasible and I will not elaborate. The first option was more user-friendly and would be a lot faster, but I also didn't cut off the 2nd option. Here's how you can provide the cookies manually: 
 
-## Plan
+1. Login to CodinGame with your bot account
+2. Create a file in `data` called `.bottoken`
+3. Paste this, replacing the values by the actual values of the cookies (you can see cookies by doing ctrl+shift+i and then going to the "Applications" tab and then selecting the sub-menu "Cookies")
+```json
+[
+  {
+    "key": "cgSession",
+    "value": "...",
+    "domain":"www.codingame.com",
+    "path":"/",
+    "secure":true,
+    "httpOnly":true,
+    "hostOnly":false,
+  },
+  {
+    "key": "rememberMe",
+    "value": "...",
+    "domain":"www.codingame.com",
+    "path":"/",
+    "secure":true,
+    "httpOnly":true,
+    "hostOnly":false,
+  }
+]
+```
+4. Try launching the bot. It will update the file correctly if the credentials provided are valid.
 
-1. Summary:
+# Potential Issues :
 
-    - Left: Toal number of matches
-    - Right: Pie Chart of Modes
+### Sorry, we can't find your chrome installation. Can you link us to your chrome installation ? Feel free to paste it below. It will be automatically added to your .env file
 
-2. Top Players:
+> It means your chrome installation is in a non-standard path and can't be found by the bot. You can simply copy the whole path and paste it, or manually add it to `.env` and restart the bot.
 
-    - Left: Top Three Player show with bar graph
-    - Right: min summary of player:
-        - _Attended Matches / Total matches_ - _Wins_ - _win Ratio_ (Maybe Add language too)
+### [...] credentials are invalid... oof. Deleting saved cookies.
 
-3. Languages summary:
+> It means the cookies saved (or the ones you manually entered) are invalid. You will be automatically prompted to login again.
 
-    - Left: Horizontal Bar with all languages
-    - Right: Top Three languages
+### I get the above error and it never stops
 
-4. Consistency Players(NOT SURE):
+> Create an issue here. I'd suspect an API change.
 
-    - Left: Top Three consitance players (Calculate ?)
-        - Most played players
-    - Right: Summary Maybe?
-        - Mode wise most played players
+### The website is broken/doesn't respond
 
-5. Player wise summary:
-    - Choose player
-    - Left: Summary:
-        - Match Attended / Total Matches
-        - Wins win Ration
-        - Fav lang
-        - Languages Used
-    - Right: Pie Chart Mode Wise Summary
+> Try going into `client` folder and running `npm install & npm run build`. By default the pages should be built already in release.
+
+### Other errors
+
+> Feel free to Google the error if it is related to puppeteer, or create an issue here. Chrome detection isn't perfect and could error for some.
