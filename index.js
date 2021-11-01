@@ -4,6 +4,7 @@ const express = require("express");
 const Ctr = new require("./controller");
 const app = express();
 const database = require('./db');
+const fs = require('fs');
 
 const controller = new Ctr();
 app.use(express.static(__dirname + "/client/build"));
@@ -271,7 +272,7 @@ async function start(){
     await controller.init();
     console.log('Finished Controller Initialization... Trying to launch webserver...');
     console.log('Checking if website is built...');
-    if(fs.existsSync(_dirname + "/client/build/index.html")) console.log('False alarm!')
+    if(fs.existsSync(__dirname + "/client/public/index.html")) console.log('False alarm!')
     else{
       console.log('Running react build');
       execSync(`cd ${__dirname} & cd client & npm install & npm run build`);

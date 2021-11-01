@@ -1,4 +1,4 @@
-// const bot = require("./bot");
+const bot = require("./bot");
 const db = require("./db");
 const {paths} = require('./utils');
 const axios = require("axios").default;
@@ -60,12 +60,12 @@ class Controller {
         this.myId = null;
         this.db = db;
         //Setting callBack function
-        // bot.on_cocCmd = this.onCocCmd.bind(this);
-        // bot.on_linkCmd = this.onLinkCmd.bind(this);
-        // bot.on_addCmd = this.onAddCmd.bind(this);
-        // bot.on_removeCmd = this.onRemoveCmd.bind(this);
-        // bot.on_elseCmd = this.onElseCmd.bind(this);
-        // bot.on_helpCmd = this.onHelpCmd.bind(this);
+        bot.on_cocCmd = this.onCocCmd.bind(this);
+        bot.on_linkCmd = this.onLinkCmd.bind(this);
+        bot.on_addCmd = this.onAddCmd.bind(this);
+        bot.on_removeCmd = this.onRemoveCmd.bind(this);
+        bot.on_elseCmd = this.onElseCmd.bind(this);
+        bot.on_helpCmd = this.onHelpCmd.bind(this);
     }
     /**
      * Init
