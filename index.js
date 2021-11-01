@@ -275,7 +275,7 @@ async function start(){
     await controller.init();
     console.log('Finished Controller Initialization... Trying to launch webserver...');
     console.log('Checking if website is built...');
-    if(fs.existsSync(_dirname + "/client/build/index.html")) console.log('False alarm!')
+    if(fs.existsSync(__dirname + "/client/public/index.html")) console.log('False alarm!')
     else{
       console.log('Running react build');
       execSync(`cd ${__dirname} & cd client & npm install & npm run build`);
