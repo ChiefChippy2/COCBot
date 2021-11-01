@@ -16,7 +16,7 @@ This repository contains the code for a twitch clash of code bot that also has o
 
 ### Setup :
 1. Simply download the code, unzip if necessary. Open a terminal in the directory and run `npm i`. This should install everything.
-2. Create a `.env` file, following the model given in `.env.sample`. If a value is surrounded by square brackets, they are not necessary.
+2. Create a `.env` file, following the model given in `example.env`. If a value is surrounded by square brackets, they are not necessary.
 3. Run the bot and let it do its thing. 
 
 # Manually logging in the bot to CodinGame

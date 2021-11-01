@@ -1,153 +1,150 @@
 const {paths} = require('./utils');
 const Keyv = require('keyv');
 const {existsSync, mkdirSync} = require('fs');
-if(!existsSync(paths.data)) mkdirSync(paths.data);
-const database = new Keyv(`sqlite://${paths.db}`, {namespace: 'internals'});
-const matchesDatabase = new Keyv(`sqlite://${paths.db}`, {namespace: 'matches'});
 
-database.on('error', err => console.log('Connection Error with database', err));
 /**
- * Internals : 
- * 
+ * Internals :
+ *
  * matchInfo -> Array of matchInformation
  * commands -> Array of commands
- * 
+ *
  */
-/**
+class Database {
+  /**
+   * Constructor
+   */
+  constructor() {
+    if (!existsSync(paths.data)) mkdirSync(paths.data);
+    this.database = new Keyv(`sqlite://${paths.db}`, {namespace: 'internals'});
+    this.matchesDdatabase = new Keyv(`sqlite://${paths.db}`, {namespace: 'matches'});
+    this.database.on('error', (err) => console.log('Connection Error with database', err));
+  }
+  /**
  * Initializes db
- * @return {boolean}
+ * @return {Promise<boolean>}
  */
-const init = async () => {
-  const mInfo = await database.get('matchInfo') || {};
-  await database.set('matchInfo', mInfo);
+  async init() {
+    const mInfo = await this.database.get('matchInfo') || {};
+    await this.database.set('matchInfo', mInfo);
 
-  const cInfo = await database.get('commands') || {};
-  await database.set('commands', cInfo);
-};
-
-const getAll = async () => {
-  return await database.get('matchInfo') || {};
-};
-/**
+    const cInfo = await this.database.get('commands') || {};
+    await this.database.set('commands', cInfo);
+  };
+  /**
+   * Get all match info
+   * @return {Record<MatchObject>}
+   */
+  async getAll() {
+    return await this.database.get('matchInfo') || {};
+  };
+  /**
  * Adds a match
  * @param {string} channelName Channel Name
  * @param {string} matchId Match ID
  * @param {boolean} [removeCurrent=false] Remove current Match
- * @return {boolean}
+ * @return {Promise<boolean>}
  */
-const addMatch = async (channelName, matchId, removeCurrent = false) => {
-    const chobj = await getChannelMatches(channelName);
+  async addMatch(channelName, matchId, removeCurrent = false) {
+    const chobj = await this.getChannelMatches(channelName);
     let prev = [];
     if (chobj) {
-        prev = chobj["prevMatches"];
-        if (chobj["currentMatch"] !== "" && !removeCurrent) {
-            prev.unshift(chobj["currentMatch"]);
-        }
+      prev = chobj['prevMatches'];
+      if (chobj['currentMatch'] !== '' && !removeCurrent) {
+        prev.unshift(chobj['currentMatch']);
+      }
     }
-    const mInfo = await database.get('matchInfo');
+    const mInfo = await this.database.get('matchInfo');
     mInfo[channelName] = {
       currentMatch: matchId,
       prevMatches: prev,
     };
-    return await database.set('matchInfo', mInfo);
-};
-/**
+    return await this.database.set('matchInfo', mInfo);
+  };
+  /**
  * Removes the current match
  * @param {string} channelName Channel Name
- * @return {boolean}
+ * @return {Promise<boolean>}
  */
-const removeCurrentMatch = async (channelName) => {
-    const mInfo = await database.get('matchInfo');
+  async removeCurrentMatch(channelName) {
+    const mInfo = await this.database.get('matchInfo');
     mInfo[channelName].currentMatch = null;
-    return await database.set('matchInfo', mInfo);
-
-};
-/**
+    return await this.database.set('matchInfo', mInfo);
+  };
+  /**
  * Gets Channel matches
  * @param {string} channelName Gets all matches for channel
- * @return {MatchObject}
+ * @return {Promise<MatchObject>}
  */
-const getChannelMatches = async (channelName) => {
-  const mInfo = await database.get('matchInfo');
-  return mInfo[channelName];
-};
+  async getChannelMatches(channelName) {
+    const mInfo = await this.database.get('matchInfo');
+    return mInfo[channelName];
+  };
 
-/**
+  /**
  * Gets Channel Commands
  * @param {string} channelName Gets all commands for channel
- * @return {Record<string, string>}
+ * @return {Promise<Record<string, string>>}
  */
-const getChannelCommands = async (channelName) => {
-  const cInfo = await database.get('commands');
-  return cInfo[channelName] || {};
-};
+  async getChannelCommands(channelName) {
+    const cInfo = await this.database.get('commands');
+    return cInfo[channelName] || {};
+  };
 
-/**
+  /**
  * Adds channel command
  * @param {string} channelName Channel name
  * @param {string} command Command
  * @param {string} response Response
- * @return {boolean}
+ * @return {Promise<boolean>}
  */
-const addCommand = async (channelName, command, response) => {
-    const cInfo = await database.get('commands');
+  async addCommand(channelName, command, response) {
+    const cInfo = await this.database.get('commands');
     cInfo[channelName] = {
+      ...cInfo[channelName] || {},
       [command]: response,
     };
-    return await database.set('commands', cInfo);
-};
+    return await this.database.set('commands', cInfo);
+  };
 
-/**
+  /**
  * Gets all commands
- * @return {Record<string, Record<string, string>>}
+ * @return {Promise<Record<string, Record<string, string>>>}
  */
-const getCommands = async () => {
-    return await database.get('commands');
-};
+  async getCommands() {
+    return await this.database.get('commands');
+  };
 
-/**
+  /**
  * Removes a command
  * @param {string} channelName Gets all matches for channel
  * @param {string} command Command
- * @return {boolean}
+ * @return {Promise<boolean>}
  */
-const removeCommand = async (channelName, command) => {
-  const cInfo = await database.get('commands');
-  if (cInfo[channelName]?.[command]) cInfo[channelName][command] = null;
-  return await database.set('commands', cInfo);
-};
+  async removeCommand(channelName, command) {
+    const cInfo = await this.database.get('commands');
+    if (cInfo[channelName]?.[command]) cInfo[channelName][command] = null;
+    return await this.database.set('commands', cInfo);
+  };
 
-/**
+  /**
  * Gets previous match info
- * @return {Record<string, any>|null}
+ * @return {Promise<Record<string, any>|null>}
  */
-const getPrevMatchInfo = async () => {
-  return await matchesDatabase.get('matches');
-}
-/**
+  async getPrevMatchInfo() {
+    return await this.matchesDdatabase.get('matches');
+  };
+  /**
  * Sets prev. match info
  * @param {Record<string, any>} data Data
- * @return {boolean}
+ * @return {Promise<boolean>}
  */
-const setPrevMatchInfo = async (data) => {
-  return await matchesDatabase.set('matches', data);
+  async setPrevMatchInfo(data) {
+    return await this.matchesDdatabase.set('matches', data);
+  };
 }
-
 /**
  * @typedef {Object} MatchObject
  * @property {string|null} currentMatch Current Match
  * @property {string[]|null} prevMatches Previous Matches
  */
-module.exports = {
-    init,
-    getAll,
-    addMatch,
-    removeCurrentMatch,
-    getChannelMatches,
-    getChannelCommands,
-    addCommand,
-    getCommands,
-    removeCommand,
-    getPrevMatchInfo,
-    setPrevMatchInfo,
-};
+module.exports = Database;
