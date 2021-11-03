@@ -3,6 +3,10 @@ const Keyv = require('keyv');
 const {existsSync, mkdirSync} = require('fs');
 
 /**
+ * @typedef {import('./utils').CliOptions} CliOptions
+ */
+
+/**
  * Internals :
  *
  * matchInfo -> Array of matchInformation
@@ -12,11 +16,23 @@ const {existsSync, mkdirSync} = require('fs');
 class Database {
   /**
    * Constructor
+   * @param {CliOptions} options Options
    */
-  constructor() {
+  constructor({customDB, noStore}) {
     if (!existsSync(paths.data)) mkdirSync(paths.data);
-    this.database = new Keyv(`sqlite://${paths.db}`, {namespace: 'internals'});
-    this.matchesDdatabase = new Keyv(`sqlite://${paths.db}`, {namespace: 'matches'});
+    /**
+     * @type {string}
+     * @private
+     */
+    this.dbPath = `sqlite://${paths.db}`;
+    if (noStore) {
+      this.dbPath = '';
+    }
+    if (customDB) {
+      this.dbPath = customDB;
+    }
+    this.database = new Keyv(this.dbPath, {namespace: 'internals'});
+    this.matchesDdatabase = new Keyv(this.dbPath, {namespace: 'matches'});
     this.database.on('error', (err) => console.log('Connection Error with database', err));
   }
   /**

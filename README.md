@@ -17,7 +17,7 @@ This repository contains the code for a twitch clash of code bot that also has o
 ### Setup :
 1. Simply download the code, unzip if necessary. Open a terminal in the directory and run `npm i`. This should install everything.
 2. Create a `.env` file, following the model given in `example.env`. If a value is surrounded by square brackets, they are not necessary.
-3. Run the bot and let it do its thing. 
+3. Run the bot and let it do its thing. NOTE: If you are running this on a vps or any environment without a chrome installatation nor a display, you will need to set the cookies manually. See the steps below :
 
 # Manually logging in the bot to CodinGame
 
@@ -52,6 +52,18 @@ Of course, the third option was not feasible and I will not elaborate. The first
 ```
 4. Try launching the bot. It will update the file correctly if the credentials provided are valid.
 
+NB. Please don't leak the rememberMe token as it may give other people access to your bot CG account.
+
+# CLI Options
+
+Do `node path/to/index.js help` to see a list of CLI Options.
+
+# Using a custom database
+
+## THIS IS STILL IN EXPERIMENTAL PHASE
+
+You can use another database instead of sqlite. Simply add --use-db=type://path/to/db where type:// is the type of database, and path/to/db is the path to db. Prefer absolute paths. The code uses [Keyv](https://www.npmjs.com/package/keyv) as wrapper, and it supports Redis, MongoDB, SQLite, PostgreSQL, and MySQL. You'll need to install the sub-wrapper needed for the custom db: `@keyv/redis`, `@keyv/mongo`, `@keyv/sqlite`, `@keyv/postgres`, or `@keyv/mysql`.
+
 # Potential Issues :
 
 ### Sorry, we can't find your chrome installation. Can you link us to your chrome installation ? Feel free to paste it below. It will be automatically added to your .env file
@@ -73,3 +85,7 @@ Of course, the third option was not feasible and I will not elaborate. The first
 ### Other errors
 
 > Feel free to Google the error if it is related to puppeteer, or create an issue here. Chrome detection isn't perfect and could error for some.
+
+# Contributing
+
+Feel free to contribute, but make sure you've linted your code with eslint following the rules config and pre-tested the code.

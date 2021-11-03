@@ -14,14 +14,23 @@ const rl = readline.createInterface({
 axiosCookieJarSupport(axios);
 
 const cookieJar = new tough.CookieJar();
+
+/**
+ * @typedef {import('./utils').CliOptions} CliOptions
+ */
+
 /**
  * Controller class
  */
 class Controller {
   /**
    * Constructor. Please call init() to actually initiate Controller.
+   * @param {CliOptions} options Options
    */
-  constructor() {
+  constructor({noLoginPrompt, forceLogin}) {
+    this.noLogin = noLoginPrompt;
+    this.forceLogin = forceLogin;
+
     /**
       * Banned Languages, if any
       * @type {string[]}
@@ -82,7 +91,18 @@ class Controller {
     * @return {Promise<void>}
     */
   async init() {
-    if (existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
+    if (this.noLogin) {
+      if (!existsSync(paths.botToken)) {
+        console.log('No saved credentials found!');
+        throw new Error('LoginError');
+      }
+      if (!await this.verifyCreds(true, readFileSync(paths.botToken).toString())) {
+        console.log('Bad Credentials!');
+        throw new Error('LoginError');
+      };
+      return true;
+    }
+    if (!this.forceLogin && existsSync(paths.botToken) && await this.verifyCreds(true, readFileSync(paths.botToken).toString())) return true;
     await this.login();
   }
   /**

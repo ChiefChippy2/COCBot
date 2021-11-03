@@ -1,9 +1,10 @@
 const express = require('express');
-const {paths} = require('../utils');
+const {paths, noReject} = require('../utils');
 const {writeFileSync} = require('fs');
 /**
  * @typedef {import('../controller')} Controller
  * @typedef {import('../db.js')} Database
+ * @typedef {import('../utils').CliOptions} CliOptions
  */
 /**
  * Webserver
@@ -13,8 +14,9 @@ class WebServer {
    * Constructor
    * @param {Controller} controller
    * @param {Database} database
+   * @param {CliOptions} options
    */
-  constructor(controller, database) {
+  constructor(controller, database, {noAPI}) {
     this.controller = controller;
     this.database = database;
     this.app = express();
@@ -23,6 +25,7 @@ class WebServer {
     this.app.get('/web/*', (req, res) => {
       res.sendFile(paths.build);
     });
+    if (noAPI) return;
     /**
      * API section
      */
@@ -114,9 +117,9 @@ class WebServer {
       }
     });
 
-    // #endregion
-
-    // #region  ADMIM
+    /**
+     * Requires login
+     */
     this.app.use((req, res, next) => {
       const auth = {
         login: process.env.ADMIN_USER,
@@ -164,9 +167,10 @@ class WebServer {
       console.time('create');
       const proms = [];
       for (const match of op.prevMatches) {
-        proms.push(this.controller.getMatchReport(match));
+        proms.push(noReject(this.controller.getMatchReport(match)));
       }
-      const jsonOp = await Promise.all(proms);
+      let jsonOp = await Promise.all(proms);
+      jsonOp = jsonOp.filter((x)=>x);
       console.timeLog('create', ' Got All');
       const ret = {
         total: 0,
