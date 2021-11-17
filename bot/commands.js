@@ -60,11 +60,12 @@ class Commands extends Controller {
       const report = await this.getMatchReport(currentMatch);
       if (!report.started) {
         try {
-          await this.startMatch(currentMatch);
+          if (await report.players.find((x)=>x.codingamerId === this.myId).status !== 'OWNER') return `Bot does not own clash.`;
+          this.startMatch(currentMatch);
           return `Starting with ${report.players.length - 1} players:`;
         } catch (e) {
           console.log('Error starting match!');
-          return `Error starting match! Try creating a new CoC`;
+          return `Error starting match! Try canceling the current lobby and creating a new CoC`;
         }
       }
     }
@@ -107,11 +108,28 @@ class Commands extends Controller {
    * @return {Promise<string>}
    */
   async onLinkCmd(channelName, opts, isMod) {
-    const op = await this.db.getChannelMatches(channelName);
-    const matchId = op ? op.currentMatch : '';
-    if (!matchId) return 'No Clash Running!';
-    const stars = '*'.repeat(Math.floor(Math.random()*10));
-    return `${stars} Join Clash: https://www.codingame.com/clashofcode/clash/${matchId} ${stars}`;
+    const action = opts.shift();
+    if (!action || action === 'current') {
+      const op = await this.db.getChannelMatches(channelName);
+      const matchId = op ? op.currentMatch : '';
+      if (!matchId) return 'No Clash Running!';
+      const stars = '*'.repeat(Math.floor(Math.random()*10));
+      return `${stars} Join Clash: https://www.codingame.com/clashofcode/clash/${matchId} ${stars}`;
+    }
+    if (action === 'add' && isMod) {
+      const matchId = opts.shift()?.toLowerCase?.();
+      if (!matchId || !/^[\dabcdef]{36,}$/.test(matchId)) return 'Invalid Match ID';
+      await this.db.addMatch();
+      return 'Ok, match has been successfully set. Remember however that the bot may not be able to start it.';
+    }
+    if (action === 'last') {
+      const howMany = parseInt(opts.shift()) ?? 1;
+      if (isNaN(howMany)) return 'Provide a valid number (last match is 1)';
+      const matches = await this.db.getChannelMatches(channelName);
+      const id = matches.prevMatches[howMany - 1];
+      if (!id) return 'Not found...';
+      return `${howMany} match[es] ago, you were playing this clash: https://www.codingame.com/clashofcode/clash/${id}`;
+    }
   }
   /**
    * Handles help
