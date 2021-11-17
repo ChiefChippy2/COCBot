@@ -274,7 +274,7 @@ class Controller {
     }
     const url =
             'https://www.codingame.com/services/ClashOfCode/createPrivateClash';
-    const jsonData = [this.myId, {SHORT: 'true'}, languages, modes];
+    const jsonData = [this.myId, languages, modes];
     const data = await axios
         .post(url, jsonData, {
           jar: cookieJar, // tough.CookieJar or boolean
