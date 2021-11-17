@@ -124,7 +124,7 @@ class Commands extends Controller {
     }
     if (action === 'last') {
       const howMany = parseInt(opts.shift()) ?? 1;
-      if (isNaN(howMany)) return 'Provide a valid number (last match is 1)';
+      if (isNaN(howMany) || howMany < 1) return 'Provide a valid number (last match is 1)';
       const matches = await this.db.getChannelMatches(channelName);
       const id = matches.prevMatches[howMany - 1];
       if (!id) return 'Not found...';
