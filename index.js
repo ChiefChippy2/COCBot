@@ -5,6 +5,7 @@ const WebServer = require('./webserver');
 const Database = require('./db');
 const {paths, parseArgv} = require('./utils');
 const fs = require('fs');
+const BotConsole = require('./bot/stdin');
 
 /**
  * Starts everything
@@ -32,6 +33,10 @@ async function start() {
       }
       server.app.listen(process.env.PORT || 5000, () => console.log(`Webserver is running on port ${process.env.PORT || 5000}`));
     } else console.log('Skipped.');
+    if (!options.noInput) {
+      const consoleUI = new BotConsole(bot.client);
+      consoleUI.captureInput();
+    }
   } catch (e) {
     console.error('An error happened whilst initializing! Error Output : ', e);
     console.log('Process exiting...');

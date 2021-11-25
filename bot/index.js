@@ -69,14 +69,16 @@ class Bot extends CmdHandler {
             const ops = await this.onHelpCmd(channel, opts, isMod);
             for (const o of ops) {
               if (!o) continue;
-              await this.client.say(channel, o);
+              if (user['user-id'] === 'console-0') console.log(`[${new Date().toLocaleTimeString()}] ${process.env.BOT_NICK} via console: ${o}`);
+              else await this.client.say(channel, o);
             }
             return;
           default:
             op = await this.onElseCmd(channel, cmd, isMod);
         }
 
-        if (op) await this.client.say(channel, op);
+        if (op && user['user-id'] === 'console-0') console.log(`[${new Date().toLocaleTimeString()}] ${process.env.BOT_NICK} via console: ${op}`);
+        else if (op) await this.client.say('#'+channel, op);
       } catch (e) {
         console.log('An error happened whilst processing the command above!');
         await this.client.say(channel, 'Something went wrong, please try again later or ask the streamer to check logs.');

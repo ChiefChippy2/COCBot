@@ -5,11 +5,7 @@ const axiosCookieJarSupport = require('axios-cookiejar-support').default;
 const tough = require('tough-cookie');
 const puppet = require('puppeteer-core');
 const {writeFileSync, readFileSync, existsSync, appendFileSync, unlinkSync} = require('fs');
-const readline = require('readline');
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+const rl = require('./utils').readline;
 
 axiosCookieJarSupport(axios);
 

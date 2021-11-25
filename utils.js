@@ -1,3 +1,8 @@
+const Readline = require('readline');
+const readline = Readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 const {join} = require('path');
 const paths = {
   'env': join(__dirname, '.env'),
@@ -29,6 +34,7 @@ function parseArgv() {
   const args = process.argv.slice(2);
   if (/help\b/.test(args.join(' '))) {
     console.log(`COCBot Command Line Options : 
+--no-input                   Disables sending commands from console input (STDIN)
 --no-login                   Disables pupeeteer login prompt and will use the credentials saved in data (if any). Can't be used with -force-login
 --no-web                     Disables entire webserver
 --no-api                     Disables all API endpoints
@@ -41,6 +47,7 @@ function parseArgv() {
     process.exit(0);
   }
   return {
+    'noInput': args.includes('--no-input'),
     'noLoginPrompt': args.includes('--no-login'),
     'noWebServer': args.includes('--no-web'),
     'noAPI': args.includes('--no-api'),
@@ -51,6 +58,7 @@ function parseArgv() {
 }
 /**
  * @typedef {Object} CliOptions
+ * @property {boolean} noInput
  * @property {boolean} noLoginPrompt
  * @property {boolean} noWebServer
  * @property {boolean} noAPI
@@ -58,4 +66,4 @@ function parseArgv() {
  * @property {boolean} forceLogin
  * @property {string|null} customDB
  */
-module.exports = {paths, noReject, parseArgv};
+module.exports = {paths, readline, noReject, parseArgv};
