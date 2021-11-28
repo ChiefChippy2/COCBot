@@ -1,4 +1,0 @@
-{
-  "mods": "Manage Commands:|| %PREFIXadd | %PREFIXset <command> <response> : After that %PREFIX<command> will send back <response> ||    %PREFIXremove | %PREFIXreset <command> : deletes the <command></command>",
-  "all": "COC Bot:  %PREFIXcoc : reset | c[ancel] Cancels current Lobby ||   %PREFIXcoc : Create new lobby, optional parameters to set Mode: f[astest] s[hortest] r[everse] ||  %PREFIXcoc : Start current lobby if any and has not been Started ||  %PREFIXl[ink] : gives link of current lobby || %PREFIXl[ink] add <id> : Adds the provided CoC lobby id as the new lobby || %PREFIXl[ink] last [n] : Gives the link of the last [n] match."
-}

@@ -28,44 +28,6 @@ class Controller {
     this.forceLogin = forceLogin;
 
     /**
-      * Banned Languages, if any
-      * @type {string[]}
-      */
-    this.bannedLangs = [];
-    /**
-      * List of languages
-      * @type {string[]}
-      */
-    this.languages = [
-      'Bash',
-      'VB.NET',
-      'C++',
-      'C#',
-      'C',
-      'Clojure',
-      'D',
-      'Dart',
-      'F#',
-      'Go',
-      'Groovy',
-      'Haskell',
-      'Java',
-      'Javascript',
-      'Kotlin',
-      'Lua',
-      'ObjectiveC',
-      'OCaml',
-      'Pascal',
-      'Perl',
-      'PHP',
-      'Python3',
-      'Ruby',
-      'Rust',
-      'Scala',
-      'Swift',
-      'TypeScript',
-    ];
-    /**
       * Email for login
       * @type {string|null}
       */
@@ -254,7 +216,7 @@ class Controller {
   }
   /**
     *
-    * @param {Array<"FASTEST", "SHORTEST", "REVERSE">} modes Modes that should be available
+    * @param {["FASTEST", "SHORTEST", "REVERSE"]} modes Modes that should be available
     * @param {Array<string>} languages Languages
     * @param {boolean} [silent=false] Don't throw error explicitly
     * @return {Promise<string>} Link

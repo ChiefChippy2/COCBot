@@ -3,6 +3,35 @@ const readline = Readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+const langs = [
+  'Bash',
+  'VB.NET',
+  'C++',
+  'C#',
+  'C',
+  'Clojure',
+  'D',
+  'Dart',
+  'F#',
+  'Go',
+  'Groovy',
+  'Haskell',
+  'Java',
+  'Javascript',
+  'Kotlin',
+  'Lua',
+  'ObjectiveC',
+  'OCaml',
+  'Pascal',
+  'Perl',
+  'PHP',
+  'Python3',
+  'Ruby',
+  'Rust',
+  'Scala',
+  'Swift',
+  'TypeScript',
+];
 const {join} = require('path');
 const paths = {
   'env': join(__dirname, '.env'),
@@ -66,4 +95,4 @@ function parseArgv() {
  * @property {boolean} forceLogin
  * @property {string|null} customDB
  */
-module.exports = {paths, readline, noReject, parseArgv};
+module.exports = {langs, paths, readline, noReject, parseArgv};
