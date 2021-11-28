@@ -65,7 +65,7 @@ class Commands extends Controller {
    * @return {Promise<string[]>}
    */
   async onHelpCmd(channelName, opts, isMod) {
-    return 'We have migrated our command help page to : https://github.com/ChiefChippy2/COCBot/docs/commands.md';
+    return 'We have migrated our command help page to : https://github.com/ChiefChippy2/COCBot/blob/main/docs/commands.md';
   }
   /**
    * Adds custom command
