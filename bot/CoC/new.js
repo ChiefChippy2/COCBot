@@ -39,8 +39,8 @@ class NewClash {
     const chosenModes = args ? args.filter((arg)=>modeAliases.includes(arg)).map((malias)=>aliasToMode[malias]) : [];
     const chosenLangs = args ? args.filter((arg)=>langs.map((x)=>x.toLowerCase()).includes(arg)).map((lang)=>langs.find((x)=>x.toLowerCase() === lang)) : [];
     let availLangs = [...langs.filter((x)=>!this.mainHandler.bannedLangs.includes(x.toLowerCase()))];
-    if (!chosenLangs.length && keyword === 'only' || keyword === 'ban') return `No valid langs provided for "${keyword}".`;
-    if (keyword === 'ban') availLangs = [...availLangs.filter((x)=>!this.chosenLangs.includes(x))];
+    if (!chosenLangs.length && (keyword === 'only' || keyword === 'ban')) return `No valid langs provided for "${keyword}".`;
+    if (keyword === 'ban') availLangs = [...availLangs.filter((x)=>!chosenLangs.includes(x))];
     else availLangs = [...new Set(chosenLangs)];
     const match = await this.mainHandler.createPrivateMatch(
       chosenModes.length > 0 ? chosenModes : availModes,

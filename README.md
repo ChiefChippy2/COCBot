@@ -5,6 +5,7 @@ A major part of the code comes from [rozbrajaczpoziomow/COCBot](https://github.c
 # Function of the bot
 
 This repository contains the code for a twitch clash of code bot that also has other miscellaneous functions. Clash of code is a competitive, real-time, multiplayer programmaing game created by [CodinGame](https://codingame.com) where you have to solve a problem within 15 minutes. The API used to communicate with CodinGame is unofficial and is subject to break anytime. A website on localhost (http://localhost:PORT/web/channelName) is also provided for the user to see clash summary. Reports are generated in the data folder.
+For command examples, check EXAMPLE.md
 
 # Instructions & Prerequisities
 

@@ -26,7 +26,7 @@ class Bot extends CmdHandler {
       },
       channels: process.env.CHANNELS.split(','),
     });
-
+    this.explicitMods = process.env.EXPLICIT_MODS?.split(',').map((x)=>x.toLowerCase());
     this.client.connect().catch(console.error);
     this.client.on('connected', ()=>{
       console.log('Successfully connected to twitch! Logging messages below : ');
@@ -38,7 +38,7 @@ class Bot extends CmdHandler {
       channel = channel.slice(1); // Removes #
 
       const isMod =
-        user.mod || user['user-type'] === 'mod' || channel === user.username;
+        user.mod || user['user-type'] === 'mod' || channel === user.username || this.explicitMods.includes(user.username.toLowerCase());
 
       channel = channel.toLowerCase();
       const opts = message.split(/ +/);
@@ -76,6 +76,7 @@ class Bot extends CmdHandler {
         else if (op) await this.client.say('#'+channel, op);
       } catch (e) {
         console.log('An error happened whilst processing the command above!');
+        if (process.env.DEV) console.error(e);
         await this.client.say(channel, 'Something went wrong, please try again later or ask the streamer to check logs.');
       }
     });
