@@ -235,6 +235,7 @@ class Controller {
     const jsonData = [this.myId, languages, modes];
     const data = await axios
         .post(url, jsonData, {
+          headers: {'Content-Type': 'application/json;charset=UTF-8'},
           jar: cookieJar, // tough.CookieJar or boolean
           withCredentials: true, // If true, send cookie stored in jar
         })
@@ -261,6 +262,7 @@ class Controller {
             'https://www.codingame.com/services/ClashOfCode/startClashByHandle';
     const jsonData = [this.myId, matchId];
     await axios.post(url, jsonData, {
+      headers: {'Content-Type': 'application/json;charset=UTF-8'},
       jar: cookieJar, // tough.CookieJar or boolean
       withCredentials: true, // If true, send cookie stored in jar
     });
@@ -281,6 +283,7 @@ class Controller {
             'https://www.codingame.com/services/ClashOfCode/findClashReportInfoByHandle';
     const jsonData = [matchId];
     const res = await axios.post(url, jsonData, {
+      headers: {'Content-Type': 'application/json;charset=UTF-8'},
       jar: cookieJar, // tough.CookieJar or boolean
       withCredentials: true, // If true, send cookie stored in jar
     });
